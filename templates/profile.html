@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile & Settings - FoodMe{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold">Account Settings</h2>
+        <p class="text-muted">Manage your profile, dietary preferences, and security</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-2">
+                <div class="nav flex-column nav-pills" id="settings-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active text-start fw-bold mb-1" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile-content" type="button" role="tab">
+                        👤 Public Profile
+                    </button>
+                    <button class="nav-link text-start fw-bold mb-1" id="diet-tab" data-bs-toggle="pill" data-bs-target="#diet-content" type="button" role="tab">
+                        🥗 Dietary Preferences
+                    </button>
+                    <button class="nav-link text-start fw-bold" id="security-tab" data-bs-toggle="pill" data-bs-target="#security-content" type="button" role="tab">
+                        🔒 Security
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="tab-content" id="settings-tabContent">
+            
+            <div class="tab-pane fade show active" id="profile-content" role="tabpanel" tabindex="0">
+                <div class="card shadow-sm border-0 p-4">
+                    <h5 class="fw-bold mb-4 border-bottom pb-2">Public Profile</h5>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-4" style="width: 80px; height: 80px; background-color: var(--fm-primary); font-size: 2rem;">
+                            U
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm fw-bold mb-2">CHANGE PHOTO</button>
+                            <div class="small text-muted">JPG, GIF or PNG. Max size of 2MB.</div>
+                        </div>
+                    </div>
+
+                    <form>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">First Name</label>
+                                <input type="text" class="form-control" value="Jane">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Last Name</label>
+                                <input type="text" class="form-control" value="Doe">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-muted text-uppercase fw-bold">Email Address</label>
+                            <input type="email" class="form-control" value="jane.doe@example.com">
+                        </div>
+                        <button type="submit" class="btn btn-primary fw-bold px-4">SAVE CHANGES</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="diet-content" role="tabpanel" tabindex="0">
+                <div class="card shadow-sm border-0 p-4">
+                    <h5 class="fw-bold mb-4 border-bottom pb-2">Dietary Preferences</h5>
+                    <p class="text-muted small mb-4">We'll use these preferences to filter recipes and generate tailored meal plans.</p>
+                    
+                    <form>
+                        <h6 class="fw-bold mb-3">Standard Diets</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="dietVegetarian" checked>
+                                    <label class="form-check-label" for="dietVegetarian">Vegetarian</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="dietVegan">
+                                    <label class="form-check-label" for="dietVegan">Vegan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="dietKeto">
+                                    <label class="form-check-label" for="dietKeto">Keto</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Allergies & Restrictions</h6>
+                        <div class="mb-4">
+                            <label class="form-label small text-muted">Type an ingredient and press enter to avoid it in your meal plans.</label>
+                            <div class="border rounded p-2 bg-light d-flex gap-2 mb-2">
+                                <span class="badge bg-secondary">Peanuts &times;</span>
+                                <span class="badge bg-secondary">Shellfish &times;</span>
+                            </div>
+                            <input type="text" class="form-control form-control-sm" placeholder="e.g., Dairy, Soy, Gluten">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary fw-bold px-4">UPDATE PREFERENCES</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="security-content" role="tabpanel" tabindex="0">
+                <div class="card shadow-sm border-0 p-4">
+                    <h5 class="fw-bold mb-4 border-bottom pb-2">Security & Password</h5>
+                    
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted text-uppercase fw-bold">Current Password</label>
+                            <input type="password" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-muted text-uppercase fw-bold">New Password</label>
+                            <input type="password" class="form-control">
+                            <div class="form-text small">Must be at least 8 characters long and contain a number.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-muted text-uppercase fw-bold">Confirm New Password</label>
+                            <input type="password" class="form-control">
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-dark fw-bold px-4">UPDATE PASSWORD</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm fw-bold">DELETE ACCOUNT</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
