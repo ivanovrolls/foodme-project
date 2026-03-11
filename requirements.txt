@@ -1,0 +1,19 @@
+#core
+Django==5.2.12
+
+#REST API
+djangorestframework==3.15.1
+djangorestframework-simplejwt==5.3.1
+
+#CORS
+django-cors-headers==4.3.1
+
+#env variables
+python-decouple==3.8
+
+#image uploads (c2 user story)
+Pillow==10.3.0
+
+#testing
+pytest==8.2.0
+pytest-django==4.8.0
