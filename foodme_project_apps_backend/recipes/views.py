@@ -1,0 +1,88 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Recipe, Ingredient, Tag, RecipeIngredient, RecipeStep
+
+
+@login_required
+def recipe_list(request):
+    #get /recipes/ will list all recipes belonging to the user that is currently logged in
+    #post /recipes/ will create a new recipe
+    if request.method == "POST":
+        return redirect("add_recipe")
+
+    recipes = Recipe.objects.filter(user=request.user).prefetch_related(
+        "recipe_ingredients__ingredient", "steps", "tags"
+    )
+    return render(request, "recipes.html", {"recipes": recipes})
+
+
+@login_required
+def recipe_detail(request, recipe_id):
+    #get /recipes/<id> will retrieve a single recipe
+    #put /recipes/<id> will update a recipe
+    recipe = get_object_or_404(Recipe, id=recipe_id, user=request.user)
+
+    if request.method == "POST" and request.POST.get("_action") == "delete":
+        recipe.delete()
+        return redirect("recipe_list")
+
+    if request.method == "POST" and request.POST.get("_action") == "edit":
+        recipe.title = request.POST.get("title", recipe.title)
+        recipe.description = request.POST.get("description", recipe.description)
+        recipe.save()
+        #update tags
+        tag_ids = request.POST.getlist("tag_ids")
+        recipe.tags.set(Tag.objects.filter(id__in=tag_ids))
+        return redirect("recipe_detail", recipe_id=recipe.id)
+
+    return render(request, "recipe_detail.html", {"recipe": recipe})
+
+
+@login_required
+def add_recipe(request):
+    #handles the add recipe form, get will show the form, post will save the new recipe
+    ingredients = Ingredient.objects.all().order_by("name")
+    tags = Tag.objects.all().order_by("name")
+
+    if request.method == "POST":
+        recipe = Recipe.objects.create(
+            user=request.user,
+            title=request.POST.get("title"),
+            description=request.POST.get("description", ""),
+        )
+        #update tags
+        tag_ids = request.POST.getlist("tag_ids")
+        recipe.tags.set(Tag.objects.filter(id__in=tag_ids))
+        #save ingredients
+        ingredient_ids = request.POST.getlist("ingredient_ids")
+        quantities = request.POST.getlist("quantities")
+        units = request.POST.getlist("units")
+        for ingredient_id, quantity, unit in zip(ingredient_ids, quantities, units):
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(id=ingredient_id),
+                quantity=quantity,
+                unit=unit,
+            )
+        #save steps
+        steps = request.POST.getlist("steps")
+        for i, instruction in enumerate(steps, start=1):
+            RecipeStep.objects.create(recipe=recipe, step_number=i, instruction=instruction)
+
+        return redirect("recipe_detail", recipe_id=recipe.id)
+
+    return render(request, "add_recipe.html", {"ingredients": ingredients, "tags": tags})
+
+
+@login_required
+def ingredient_list(request):
+    #get ingredients will list all available ingredients
+    ingredients = Ingredient.objects.all().order_by("name")
+    return render(request, "recipes.html", {"ingredients": ingredients})
+
+
+@login_required
+def tag_list(request):
+    #get will list all available tags
+    tags = Tag.objects.all().order_by("name")
+    return render(request, "recipes.html", {"tags": tags})

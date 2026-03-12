@@ -1,14 +1,18 @@
-from django.urls import path
-from . import views
-
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+#root url config for entire project
+#connects all app level url configs
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
-    path('login/', views.login_view, name='login'),
-    path('recipes/', views.recipes, name='recipes'),
-    path('planner/', views.meal_planner, name='meal_planner'),
-    path('shopping-list/', views.shopping_list, name='shopping_list'),
-    path('analytics/', views.analytics, name='analytics'),
-    path('profile/', views.profile, name='profile'),
-    path('recipe-detail/', views.recipe_detail, name='recipe_detail'),
-    path('add-recipe/', views.add_recipe, name='add_recipe'),
-]
+    path("admin/", admin.site.urls),
+    #recipes
+    path("", include("recipes.urls")),
+    #meal planner
+    path("", include("mealplanner.urls")),
+    #shopping list
+    path("", include("shopping.urls")),
+    #user/authentication
+    path("", include("users.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#the static() call serves uploaded dish photos during development
