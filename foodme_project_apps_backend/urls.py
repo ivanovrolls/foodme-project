@@ -5,7 +5,6 @@ from django.conf.urls.static import static
 
 #root url config for entire project
 #connects all app level url configs
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     #recipes
@@ -17,4 +16,3 @@ urlpatterns = [
     #user/authentication
     path("", include("users.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-#the static() call serves uploaded dish photos during development
