@@ -1,21 +1,18 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 #root url config for entire project
-#connects all applevel url configs
-
+#connects all app level url configs
 urlpatterns = [
     path("admin/", admin.site.urls),
-
-    #recipes API
-    path("api/", include("recipes.urls")),
-
-    #meal planner API
-    path("api/", include("mealplanner.urls")),
-
-    #shopping list API
-    path("api/", include("shopping.urls")),
-
-    #user/authentication API
-    path("api/", include("users.urls")),
-]
+    #recipes
+    path("", include("recipes.urls")),
+    #meal planner
+    path("", include("mealplanner.urls")),
+    #shopping list
+    path("", include("shopping.urls")),
+    #user/authentication
+    path("", include("users.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

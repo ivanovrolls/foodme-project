@@ -66,8 +66,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "foodme_project.urls"
-WSGI_APPLICATION = "foodme_project.wsgi.application"
+ROOT_URLCONF = "foodme_project_apps_backend.urls"
+WSGI_APPLICATION = "foodme_project_apps_backend.wsgi.application"
 
 TEMPLATES = [
     {

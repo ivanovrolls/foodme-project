@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+
 #root url config for entire project
 #connects all app level url configs
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     #recipes
