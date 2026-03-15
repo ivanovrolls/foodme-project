@@ -94,8 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    //add ingredient button
-    //clones  last ingredient row and clears it
+        //add ingredient
+    //clones last row and clears it
     document.addEventListener("click", function (e) {
         if (e.target && e.target.textContent.trim() === "+ ADD ANOTHER STEP") {
             const card = e.target.closest(".card");
@@ -115,8 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    //add ingredient button
-    //clones  last ingredient row and clears it
+    //add ingredient
+    //clones last row and clears it
     document.addEventListener("click", function (e) {
         if (e.target && e.target.textContent.trim() === "+ ADD INGREDIENT") {
             const card = e.target.closest(".card");
@@ -126,11 +126,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!lastRow) return;
 
             const newRow = lastRow.cloneNode(true);
-            //clear all 
             newRow.querySelectorAll("input").forEach(function (input) {
                 input.value = "";
             });
-            //reset 
             newRow.querySelectorAll("select").forEach(function (select) {
                 select.selectedIndex = 0;
             });
@@ -138,7 +136,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    //emove step or ingredient row when x is clicked
+    //hopping list inline item edit toggl
+    window.toggleItemEdit = function(itemId) {
+        const display = document.querySelector(".item-display-" + itemId);
+        const editForm = document.querySelector(".item-edit-" + itemId);
+        if (!display || !editForm) return;
+        //toggle visibility of display row and edit form
+        const isEditing = editForm.style.display !== "none";
+        editForm.style.display = isEditing ? "none" : "block";
+        display.style.opacity = isEditing ? "1" : "0.4";
+    };
+
+    //remove step or ingredient row when x is clicked
     document.addEventListener("click", function (e) {
         if (e.target && e.target.textContent.trim() === "✕") {
             const row = e.target.closest(".d-flex.mb-3") || e.target.closest(".row.g-2.mb-2");
@@ -146,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    //meal planner wire day and meal type selectors to add to plan forms
     const daySelector = document.getElementById("daySelector");
     const mealTypeSelector = document.getElementById("mealTypeSelector");
 
@@ -156,9 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const mealType = mealTypeSelector.value;
         //update every add to plan form on the page
         document.querySelectorAll(".add-to-plan-form").forEach(function(form) {
-            //update the form action to post to the correct day
             form.action = "/days/" + dayId + "/entries/";
-            //update the hidden meal_type input
             const mealTypeInput = form.querySelector("input[name='meal_type']");
             if (mealTypeInput) mealTypeInput.value = mealType;
         });
@@ -169,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
     //run once on page load to set initial values
     updatePlanForms();
 
-    //new ingredient modal posts to backend and adds to all dropdowns
+    //new ingredient modal
     const saveNewIngredient = document.getElementById("saveNewIngredient");
     if (saveNewIngredient) {
         saveNewIngredient.addEventListener("click", function () {

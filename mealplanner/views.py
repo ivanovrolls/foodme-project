@@ -18,10 +18,13 @@ def mealplan_list(request):
         create_week_days(meal_plan)
         return redirect("mealplan_detail", mealplan_id=meal_plan.id)
 
-    plans = MealPlan.objects.filter(
-        user=request.user
-    ).prefetch_related("days__entries__recipe")
-    return render(request, "meal_planner.html", {"plans": plans})
+    #if user already has meal then plan redirect to the most recent one
+    latest_plan = MealPlan.objects.filter(user=request.user).order_by("-week_start").first()
+    if latest_plan:
+        return redirect("mealplan_detail", mealplan_id=latest_plan.id)
+
+    #only show create form if user has no plans at all
+    return render(request, "meal_planner.html", {})
 
 @login_required
 def mealplan_detail(request, mealplan_id):
@@ -32,14 +35,22 @@ def mealplan_detail(request, mealplan_id):
     if request.method == "POST" and request.POST.get("_action") == "delete":
         meal_plan.delete()
         return redirect("mealplan_list")
+    
+    if request.method == "POST" and request.POST.get("_action") == "create":
+        week_start = date.fromisoformat(request.POST.get("week_start"))
+        new_plan = MealPlan.objects.create(user=request.user, week_start=week_start)
+        create_week_days(new_plan)
+        return redirect("mealplan_detail", mealplan_id=new_plan.id)
 
     days = meal_plan.days.all().prefetch_related("entries__recipe").order_by("date")
     #pass recipes so the add to plan section can show them
     recipes = Recipe.objects.filter(user=request.user)
+    all_plans = MealPlan.objects.filter(user=request.user).order_by("-week_start")
     return render(request, "meal_planner.html", {
         "meal_plan": meal_plan,
         "days": days,
         "recipes": recipes,
+        "all_plans": all_plans,
     })
 
 @login_required

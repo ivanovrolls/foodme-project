@@ -29,31 +29,53 @@ def shoppinglist_list(request):
 def shoppinglist_detail(request, list_id):
     #get and del
     shopping_list = get_object_or_404(ShoppingList, id=list_id, user=request.user)
-
     if request.method == "POST" and request.POST.get("_action") == "delete":
         shopping_list.delete()
         return redirect("shoppinglist_list")
-
     items = shopping_list.items.all()
-    return render(request, "shopping_list.html", {"shopping_list": shopping_list, "items": items})
+    #calculate counts for the stats cards
+    purchased_count = items.filter(purchased=True).count()
+    remaining_count = items.filter(purchased=False).count()
+    return render(request, "shopping_list.html", {
+        "shopping_list": shopping_list,
+        "items": items,
+        "purchased_count": purchased_count,
+        "remaining_count": remaining_count,
+    })
 
 
 @login_required
 def shopping_items(request, list_id):
     #get will list all items in shopping list
-    #post will add custom item to shoping list
+    #post will add custom item to shopping list
     shopping_list = get_object_or_404(ShoppingList, id=list_id, user=request.user)
 
     if request.method == "POST":
-        name = request.POST.get("name")
-        quantity = request.POST.get("quantity")
+        name = request.POST.get("name", "").strip()
+        quantity = float(request.POST.get("quantity", 0))
         unit = request.POST.get("unit", "")
-        ShoppingItem.objects.create(
-            shopping_list=shopping_list,
-            name=name,
-            quantity=quantity,
-            unit=unit,
-        )
+
+        #check if an item with the same name already exists on this list
+        existing = shopping_list.items.filter(name__iexact=name).first()
+        if existing:
+            #aggregate (only sum if units match)
+            if existing.unit.lower() == unit.lower():
+                existing.quantity += quantity
+                existing.save()
+            else:
+                ShoppingItem.objects.create(
+                    shopping_list=shopping_list,
+                    name=name,
+                    quantity=quantity,
+                    unit=unit,
+                )
+        else:
+            ShoppingItem.objects.create(
+                shopping_list=shopping_list,
+                name=name,
+                quantity=quantity,
+                unit=unit,
+            )
         return redirect("shoppinglist_detail", list_id=shopping_list.id)
 
     items = shopping_list.items.all()
@@ -70,6 +92,25 @@ def mark_item_purchased(request, item_id):
         item.save()
     return redirect("shoppinglist_detail", list_id=item.shopping_list.id)
 
+@login_required
+def edit_shopping_item(request, item_id):
+    #post will update an existing shopping item
+    item = get_object_or_404(ShoppingItem, id=item_id, shopping_list__user=request.user)
+    if request.method == "POST":
+        item.name = request.POST.get("name", item.name).strip()
+        item.quantity = float(request.POST.get("quantity", item.quantity))
+        item.unit = request.POST.get("unit", item.unit)
+        item.save()
+    return redirect("shoppinglist_detail", list_id=item.shopping_list.id)
+
+@login_required
+def delete_shopping_item(request, item_id):
+    #post will delete a shopping item
+    item = get_object_or_404(ShoppingItem, id=item_id, shopping_list__user=request.user)
+    list_id = item.shopping_list.id
+    if request.method == "POST":
+        item.delete()
+    return redirect("shoppinglist_detail", list_id=list_id)
 
 def generate_items_from_plan(shopping_list, meal_plan):
     #fetch every recipe entry in this meal plan across all days

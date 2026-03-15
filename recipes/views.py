@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .models import Recipe, Ingredient, Tag, RecipeIngredient, RecipeStep
 
 
@@ -13,7 +14,33 @@ def recipe_list(request):
     recipes = Recipe.objects.filter(user=request.user).prefetch_related(
         "recipe_ingredients__ingredient", "steps", "tags"
     )
-    return render(request, "recipes.html", {"recipes": recipes})
+
+    search = request.GET.get("search", "").strip()
+    if search:
+        recipes = recipes.filter(title__icontains=search)
+
+    tag_filter = request.GET.get("tag", "").strip()
+    if tag_filter and tag_filter != "all":
+        recipes = recipes.filter(tags__name__iexact=tag_filter)
+
+    sort = request.GET.get("sort", "newest")
+    if sort == "az":
+        recipes = recipes.order_by("title")
+    elif sort == "za":
+        recipes = recipes.order_by("-title")
+    elif sort == "oldest":
+        recipes = recipes.order_by("created_at")
+    else:
+        recipes = recipes.order_by("-created_at")
+
+    tags = Tag.objects.all().order_by("name")
+    return render(request, "recipes.html", {
+        "recipes": recipes,
+        "tags": tags,
+        "search": search,
+        "tag_filter": tag_filter,
+        "sort": sort,
+    })
 
 
 @login_required
@@ -73,6 +100,7 @@ def add_recipe(request):
 
     return render(request, "add_recipe.html", {"ingredients": ingredients, "tags": tags})
 
+
 @login_required
 def edit_recipe(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id, user=request.user)
@@ -114,7 +142,6 @@ def edit_recipe(request, recipe_id):
         "tags": tags,
     })
 
-from django.http import JsonResponse
 
 @login_required
 def add_ingredient(request):
@@ -126,6 +153,7 @@ def add_ingredient(request):
         ingredient, created = Ingredient.objects.get_or_create(name__iexact=name, defaults={"name": name})
         return JsonResponse({"id": ingredient.id, "name": ingredient.name})
     return JsonResponse({"error": "invalid request"}, status=405)
+
 
 @login_required
 def ingredient_list(request):

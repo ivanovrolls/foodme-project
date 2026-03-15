@@ -51,6 +51,52 @@
 </div>
 {% endif %}
 
+{% if meal_plan %}
+<!-- current plan info and actions -->
+<div class="card shadow-sm border-0 mb-3 p-3 border-start border-4 border-primary">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <small class="text-muted text-uppercase fw-bold d-block mb-1">Currently Viewing</small>
+            <!-- switch between existing plans -->
+            <select class="form-select" onchange="window.location='/mealplans/' + this.value + '/'">
+                {% for plan in all_plans %}
+                    <option value="{{ plan.id }}" {% if plan.id == meal_plan.id %}selected{% endif %}>
+                        Week of {{ plan.week_start }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end mt-3 mt-md-0">
+            <!-- delete current plan -->
+            <form method="POST" action="{% url 'mealplan_detail' meal_plan.id %}" class="w-100">
+                {% csrf_token %}
+                <input type="hidden" name="_action" value="delete">
+                <button type="submit" class="btn btn-outline-danger w-100 fw-bold"
+                    onclick="return confirm('Delete this meal plan? This cannot be undone.')">
+                    🗑️ DELETE PLAN
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- create a new plan — visually separate -->
+<div class="card shadow-sm border-0 mb-4 p-3 border-start border-4 border-success">
+    <small class="text-muted text-uppercase fw-bold d-block mb-2">Create New Plan</small>
+    <form method="POST" action="{% url 'mealplan_detail' meal_plan.id %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <input type="hidden" name="_action" value="create">
+        <div class="col-md-4">
+            <label class="form-label small text-muted text-uppercase fw-bold">Week Start (Monday)</label>
+            <input type="date" name="week_start" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100 fw-bold">+ CREATE</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
 <div class="card shadow-sm border-0 mb-5 overflow-hidden">
     <div class="table-responsive">
         <table class="table table-bordered text-center align-middle mb-0" style="min-width: 900px;">
@@ -170,7 +216,7 @@
             <div class="card-body p-2 text-center">
                 <small class="fw-bold d-block mb-2">{{ recipe.title }}</small>
                 <!-- post to mealplan_entries for the first day as a default, js can update this -->
-                <form method="POST" action="{% url 'mealplan_entries' days.0.id %}">
+                <form method="POST" action="{% url 'mealplan_entries' days.0.id %}" class="add-to-plan-form">
                     {% csrf_token %}
                     <input type="hidden" name="recipe_id" value="{{ recipe.id }}">
                     <input type="hidden" name="meal_type" value="dinner">

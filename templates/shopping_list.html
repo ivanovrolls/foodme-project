@@ -15,7 +15,16 @@
     <div class="col-md-6 text-md-end mt-3 mt-md-0 d-flex justify-content-md-end gap-2">
         <button class="btn btn-outline-secondary btn-sm px-3 fw-bold">📧 EMAIL LIST</button>
         <button class="btn btn-outline-secondary btn-sm px-3 fw-bold">🖨️ PRINT</button>
-        <a href="{% url 'mealplan_list' %}" class="btn btn-dark btn-sm px-3 fw-bold">← BACK TO PLANNER</a>
+        {% if shopping_list %}
+            <a href="{% url 'shoppinglist_list' %}" class="btn btn-outline-secondary btn-sm px-3 fw-bold">☰ ALL LISTS</a>
+            {% if shopping_list.meal_plan %}
+                <a href="{% url 'mealplan_detail' shopping_list.meal_plan.id %}" class="btn btn-dark btn-sm px-3 fw-bold">← BACK TO PLANNER</a>
+            {% else %}
+                <a href="{% url 'mealplan_list' %}" class="btn btn-dark btn-sm px-3 fw-bold">← BACK TO PLANNER</a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'mealplan_list' %}" class="btn btn-dark btn-sm px-3 fw-bold">← BACK TO PLANNER</a>
+        {% endif %}
     </div>
 </div>
 
@@ -31,13 +40,13 @@
     <div class="col-md-3 col-6">
         <div class="card p-3 shadow-sm border-0 h-100 border-start border-4 border-success">
             <h6 class="text-muted text-uppercase small fw-bold mb-1">Checked Off</h6>
-            <h3 class="mb-0 text-success">{{ items.filter.purchased }}</h3>
+            <h3 class="mb-0 text-success">{{ purchased_count }}</h3>
         </div>
     </div>
     <div class="col-md-3 col-6">
         <div class="card p-3 shadow-sm border-0 h-100 border-start border-4 border-warning">
             <h6 class="text-muted text-uppercase small fw-bold mb-1">Remaining</h6>
-            <h3 class="mb-0 text-warning">—</h3>
+            <h3 class="mb-0 text-warning">{{ remaining_count }}</h3>
         </div>
     </div>
     <div class="col-md-3 col-6">
@@ -60,22 +69,59 @@
             <ul class="list-group list-group-flush" id="shoppingListGroup">
                 <!-- loop through all items in this shopping list -->
                 {% for item in items %}
-                <li class="list-group-item d-flex justify-content-between align-items-center py-3 {% if item.purchased %}bg-light{% endif %}">
-                    <div class="form-check d-flex align-items-center mb-0">
-                        <!-- toggle purchased status via post -->
-                        <form method="POST" action="{% url 'mark_item_purchased' item.id %}">
-                            {% csrf_token %}
-                            <input class="form-check-input me-3 item-checkbox" type="checkbox"
-                                style="width: 1.2rem; height: 1.2rem;"
-                                {% if item.purchased %}checked{% endif %}
-                                onchange="this.form.submit()">
-                        </form>
-                        <label class="form-check-label {% if item.purchased %}text-decoration-line-through text-muted{% endif %}">
-                            <span class="fw-bold d-block {% if not item.purchased %}text-dark{% endif %}">{{ item.name }}</span>
-                            <small class="{% if not item.purchased %}text-muted{% endif %}">{{ item.quantity }} {{ item.unit }}</small>
-                        </label>
+                <li class="list-group-item py-3 {% if item.purchased %}bg-light{% endif %}">
+                    <!-- normal display row -->
+                    <div class="d-flex justify-content-between align-items-center item-display-{{ item.id }}">
+                        <div class="form-check d-flex align-items-center mb-0">
+                            <!-- toggle purchased status via post -->
+                            <form method="POST" action="{% url 'mark_item_purchased' item.id %}">
+                                {% csrf_token %}
+                                <input class="form-check-input me-3 item-checkbox" type="checkbox"
+                                    style="width: 1.2rem; height: 1.2rem;"
+                                    {% if item.purchased %}checked{% endif %}
+                                    onchange="this.form.submit()">
+                            </form>
+                            <label class="form-check-label {% if item.purchased %}text-decoration-line-through text-muted{% endif %}">
+                                <span class="fw-bold d-block {% if not item.purchased %}text-dark{% endif %}">{{ item.name }}</span>
+                                <small class="{% if not item.purchased %}text-muted{% endif %}">{{ item.quantity }} {{ item.unit }}</small>
+                            </label>
+                        </div>
+                        <!-- edit button toggles the inline form -->
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn btn-link text-muted text-decoration-none small p-0"
+                                onclick="toggleItemEdit({{ item.id }})">Edit</button>
+                            <form method="POST" action="{% url 'delete_shopping_item' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link text-danger text-decoration-none small p-0"
+                                    onclick="return confirm('Remove this item?')">🗑️</button>
+                            </form>
+                        </div>
                     </div>
-                    <button class="btn btn-link text-muted text-decoration-none small p-0">Edit</button>
+                    <!-- inline edit form — hidden by default -->
+                    <div class="item-edit-{{ item.id }} mt-2" style="display:none;">
+                        <form method="POST" action="{% url 'edit_shopping_item' item.id %}">
+                            {% csrf_token %}
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-4">
+                                    <input type="text" name="name" class="form-control form-control-sm"
+                                        value="{{ item.name }}" placeholder="Item name">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" name="quantity" class="form-control form-control-sm"
+                                        value="{{ item.quantity }}" min="0.01" step="0.01" placeholder="Qty">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="text" name="unit" class="form-control form-control-sm"
+                                        value="{{ item.unit }}" placeholder="Unit">
+                                </div>
+                                <div class="col-md-4 d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary btn-sm fw-bold">SAVE</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="toggleItemEdit({{ item.id }})">CANCEL</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </li>
                 {% empty %}
                     <li class="list-group-item text-muted py-3">no items yet — add some below</li>
@@ -117,14 +163,15 @@
             <form method="POST" action="{% url 'shoppinglist_detail' shopping_list.id %}">
                 {% csrf_token %}
                 <input type="hidden" name="_action" value="delete">
-                <button type="submit" class="btn btn-outline-danger fw-bold bg-white shadow-sm w-100">RESET LIST</button>
+                <button type="submit" class="btn btn-outline-danger fw-bold bg-white shadow-sm w-100"
+                    onclick="return confirm('Delete this shopping list? This cannot be undone.')">🗑️ DELETE LIST</button>
             </form>
         </div>
     </div>
 </div>
 
 {% else %}
-<!-- list view toshow all shopping lists when none is selected -->
+<!-- list view — show all shopping lists when none is selected -->
 <div class="row g-4 mb-5">
     <div class="col-lg-8">
         <div class="card shadow-sm border-0">
@@ -138,7 +185,15 @@
                         <span class="fw-bold d-block">Shopping List — {{ list.created_at|date:"M j, Y" }}</span>
                         <small class="text-muted">{{ list.items.count }} items</small>
                     </div>
-                    <a href="{% url 'shoppinglist_detail' list.id %}" class="btn btn-sm btn-outline-primary">VIEW</a>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'shoppinglist_detail' list.id %}" class="btn btn-sm btn-outline-primary">VIEW</a>
+                        <form method="POST" action="{% url 'shoppinglist_detail' list.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="_action" value="delete">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Delete this shopping list?')">🗑️</button>
+                        </form>
+                    </div>
                 </li>
                 {% empty %}
                     <li class="list-group-item text-muted py-3">no shopping lists yet — generate one from a meal plan</li>
