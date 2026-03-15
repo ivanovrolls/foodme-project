@@ -29,7 +29,7 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect("dashboard")
+            return redirect("recipe_list") #set to dashboard
 
         return render(request, "login.html", {"error": "invalid credentials."})
 
@@ -41,7 +41,7 @@ def logout_user(request):
     if request.method == "POST":
         logout(request)
         return redirect("login_user")
-    return redirect("dashboard")
+    return redirect("recipe_list") #set to dashboard
 
 @login_required
 def user_profile(request):

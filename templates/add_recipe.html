@@ -9,12 +9,13 @@
         <p class="text-muted">Share your culinary masterpiece with the world (or just save it for yourself).</p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex justify-content-md-end align-items-center">
-        <a href="{% url 'recipes' %}" class="btn btn-outline-secondary fw-bold me-2">CANCEL</a>
+        <a href="{% url 'recipe_list' %}" class="btn btn-outline-secondary fw-bold me-2">CANCEL</a>
         <button type="submit" form="recipeForm" class="btn btn-primary fw-bold">SAVE RECIPE</button>
     </div>
 </div>
 
-<form id="recipeForm" action="#" method="POST" enctype="multipart/form-data">
+<form id="recipeForm" action="{% url 'add_recipe' %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
     <div class="row g-4 mb-5">
         
         <div class="col-lg-8">
@@ -24,12 +25,12 @@
                 
                 <div class="mb-4">
                     <label for="recipeTitle" class="form-label small text-muted text-uppercase fw-bold">Recipe Title</label>
-                    <input type="text" class="form-control form-control-lg" id="recipeTitle" placeholder="e.g., Spicy Thai Basil Chicken" required>
+                    <input type="text" name="title" class="form-control form-control-lg" id="recipeTitle" placeholder="e.g., Spicy Thai Basil Chicken" required>
                 </div>
 
                 <div class="mb-4">
                     <label for="recipeDescription" class="form-label small text-muted text-uppercase fw-bold">Description</label>
-                    <textarea class="form-control" id="recipeDescription" rows="3" placeholder="A short description of what makes this recipe great..."></textarea>
+                    <textarea name="description" class="form-control" id="recipeDescription" rows="3" placeholder="A short description of what makes this recipe great..."></textarea>
                 </div>
 
                 <div class="row g-3 mb-4">
@@ -56,7 +57,7 @@
                         <span class="badge bg-dark rounded-circle p-2 px-3">1</span>
                     </div>
                     <div class="flex-grow-1">
-                        <textarea class="form-control" rows="2" placeholder="Describe this step..."></textarea>
+                        <textarea name="steps" class="form-control" rows="2" placeholder="Describe this step..."></textarea>
                     </div>
                     <div class="ms-2 mt-1">
                         <button type="button" class="btn btn-sm btn-outline-danger border-0">✕</button>
@@ -68,7 +69,7 @@
                         <span class="badge bg-dark rounded-circle p-2 px-3">2</span>
                     </div>
                     <div class="flex-grow-1">
-                        <textarea class="form-control" rows="2" placeholder="Describe this step..."></textarea>
+                        <textarea name="steps" class="form-control" rows="2" placeholder="Describe this step..."></textarea>
                     </div>
                     <div class="ms-2 mt-1">
                         <button type="button" class="btn btn-sm btn-outline-danger border-0">✕</button>
@@ -90,7 +91,7 @@
                     <small class="text-muted fw-bold">Upload a photo</small>
                     <small class="text-muted" style="font-size: 0.7rem;">JPEG, PNG up to 5MB</small>
                 </div>
-                <input class="form-control form-control-sm" type="file" id="recipeImage">
+                <input name="image" class="form-control form-control-sm" type="file" id="recipeImage">
             </div>
 
             <div class="card shadow-sm border-0 mb-4 p-4">
@@ -98,22 +99,17 @@
                 
                 <div class="row g-2 mb-2">
                     <div class="col-4">
-                        <input type="text" class="form-control form-control-sm" placeholder="Amt (e.g. 1 cup)">
+                        <input type="number" name="quantities" class="form-control form-control-sm" placeholder="Qty" min="0.01" step="0.01">
                     </div>
-                    <div class="col-7">
-                        <input type="text" class="form-control form-control-sm" placeholder="Ingredient name">
+                    <div class="col-3">
+                        <input type="text" name="units" class="form-control form-control-sm" placeholder="Unit">
                     </div>
-                    <div class="col-1 text-end">
-                        <button type="button" class="btn btn-sm text-danger p-0 mt-1">✕</button>
-                    </div>
-                </div>
-
-                <div class="row g-2 mb-2">
                     <div class="col-4">
-                        <input type="text" class="form-control form-control-sm" placeholder="Amt (e.g. 2 tbsp)">
-                    </div>
-                    <div class="col-7">
-                        <input type="text" class="form-control form-control-sm" placeholder="Ingredient name">
+                        <select name="ingredient_ids" class="form-select form-select-sm">
+                            {% for ingredient in ingredients %}
+                                <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-1 text-end">
                         <button type="button" class="btn btn-sm text-danger p-0 mt-1">✕</button>
@@ -121,21 +117,21 @@
                 </div>
 
                 <button type="button" class="btn btn-outline-secondary btn-sm fw-bold mt-3 w-100">+ ADD INGREDIENT</button>
+                <button type="button" class="btn btn-outline-primary btn-sm fw-bold mt-2 w-100" data-bs-toggle="modal" data-bs-target="#addIngredientModal">+ NEW INGREDIENT</button>
             </div>
 
             <div class="card shadow-sm border-0 p-4">
                 <h5 class="fw-bold mb-3 border-bottom pb-2">Tags</h5>
-                <select class="form-select mb-3" multiple aria-label="Multiple select example" style="height: 120px;">
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="keto">Keto</option>
-                    <option value="high-protein">High-Protein</option>
-                    <option value="quick">Quick & Easy</option>
+                <select name="tag_ids" class="form-select mb-3" multiple aria-label="Multiple select example" style="height: 120px;">
+                    {% for tag in tags %}
+                        <option value="{{ tag.id }}">{{ tag.name }}</option>
+                    {% endfor %}
                 </select>
                 <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple tags.</small>
             </div>
 
         </div>
     </div>
+{% include 'ingredient_modal.html' %}
 </form>
 {% endblock %}

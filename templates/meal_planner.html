@@ -9,20 +9,47 @@
         <p class="text-muted mb-0">Plan your meals for the week</p>
     </div>
     <div class="col-md-6 text-md-end mt-3 mt-md-0">
-        <button class="btn btn-primary fw-bold shadow-sm">GENERATE SHOPPING LIST →</button>
+        {% if meal_plan %}
+        <form method="POST" action="{% url 'shoppinglist_list' %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="meal_plan_id" value="{{ meal_plan.id }}">
+            <button type="submit" class="btn btn-primary fw-bold shadow-sm">GENERATE SHOPPING LIST →</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body d-flex justify-content-between align-items-center py-2">
-        <button class="btn btn-outline-secondary btn-sm px-3">&lt;</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm px-3">&lt;</button>
         <div class="text-center">
-            <h6 class="mb-0 fw-bold">WEEK OF FEBRUARY 3-9, 2026</h6>
+            {% if meal_plan %}
+                <h6 class="mb-0 fw-bold">WEEK OF {{ meal_plan.week_start }}</h6>
+            {% else %}
+                <h6 class="mb-0 fw-bold">NO PLAN SELECTED</h6>
+            {% endif %}
             <small class="text-muted">Current Week</small>
         </div>
         <button class="btn btn-outline-secondary btn-sm px-3">&gt;</button>
     </div>
 </div>
+
+{% if not meal_plan %}
+<!-- show create form if user has no meal plan yet -->
+<div class="card shadow-sm border-0 mb-4 p-4">
+    <h5 class="fw-bold mb-3">Create a New Meal Plan</h5>
+    <form method="POST" action="{% url 'mealplan_list' %}" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-4">
+            <label class="form-label small text-muted text-uppercase fw-bold">Week Start (Monday)</label>
+            <input type="date" name="week_start" class="form-control" required>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">CREATE</button>
+        </div>
+    </form>
+</div>
+{% endif %}
 
 <div class="card shadow-sm border-0 mb-5 overflow-hidden">
     <div class="table-responsive">
@@ -30,59 +57,81 @@
             <thead class="bg-light">
                 <tr>
                     <th class="text-muted small text-uppercase py-3" style="width: 12%;">Meal Type</th>
-                    <th>MON<br><small class="fw-normal">3</small></th>
-                    <th>TUE<br><small class="fw-normal">4</small></th>
-                    <th>WED<br><small class="fw-normal">5</small></th>
-                    <th>THU<br><small class="fw-normal">6</small></th>
-                    <th>FRI<br><small class="fw-normal">7</small></th>
-                    <th>SAT<br><small class="fw-normal">8</small></th>
-                    <th>SUN<br><small class="fw-normal">9</small></th>
+                    <!-- loop through days passed from the view -->
+                    {% for day in days %}
+                        <th>{{ day.date|date:"D" }}<br><small class="fw-normal">{{ day.date|date:"j" }}</small></th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
+                <!-- breakfast row -->
                 <tr>
                     <td class="text-muted small fw-bold">BREAKFAST</td>
+                    {% for day in days %}
                     <td class="p-2 align-top">
-                        <div class="border rounded p-2 text-start position-relative bg-white shadow-sm">
-                            <div class="bg-dark rounded mb-1" style="height: 10px; width: 80%;"></div>
-                            <div class="bg-secondary bg-opacity-25 rounded mb-2" style="height: 8px; width: 50%;"></div>
-                            <button class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
-                        </div>
+                        <!-- show entries for this day that match this meal type -->
+                        {% for entry in day.entries.all %}
+                            {% if entry.meal_type == "breakfast" %}
+                            <div class="border rounded p-2 text-start position-relative bg-white shadow-sm mb-1">
+                                <small class="fw-bold d-block">{{ entry.recipe.title }}</small>
+                                <form method="POST" action="{% url 'mealplan_entries' day.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="_action" value="delete">
+                                    <input type="hidden" name="entry_id" value="{{ entry.id }}">
+                                    <button type="submit" class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
                     </td>
-                    <td class="p-2 align-top">
-                        <div class="border rounded p-2 text-start position-relative bg-white shadow-sm">
-                            <div class="bg-dark rounded mb-1" style="height: 10px; width: 90%;"></div>
-                            <div class="bg-secondary bg-opacity-25 rounded mb-2" style="height: 8px; width: 60%;"></div>
-                            <button class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
-                        </div>
-                    </td>
-                    <td class="p-2 align-top">
-                        <div class="border rounded p-2 text-start position-relative bg-white shadow-sm">
-                            <div class="bg-dark rounded mb-1" style="height: 10px; width: 70%;"></div>
-                            <div class="bg-secondary bg-opacity-25 rounded mb-2" style="height: 8px; width: 40%;"></div>
-                            <button class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
-                        </div>
-                    </td>
-                    <td></td><td></td><td></td><td></td>
+                    {% endfor %}
                 </tr>
+                <!-- lunch row -->
                 <tr>
                     <td class="text-muted small fw-bold">LUNCH</td>
+                    {% for day in days %}
                     <td class="p-2 align-top">
-                        <div class="border rounded p-2 text-start position-relative bg-white shadow-sm">
-                            <div class="bg-dark rounded mb-1" style="height: 10px; width: 85%;"></div>
-                            <div class="bg-secondary bg-opacity-25 rounded mb-2" style="height: 8px; width: 45%;"></div>
-                            <button class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
-                        </div>
+                        {% for entry in day.entries.all %}
+                            {% if entry.meal_type == "lunch" %}
+                            <div class="border rounded p-2 text-start position-relative bg-white shadow-sm mb-1">
+                                <small class="fw-bold d-block">{{ entry.recipe.title }}</small>
+                                <form method="POST" action="{% url 'mealplan_entries' day.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="_action" value="delete">
+                                    <input type="hidden" name="entry_id" value="{{ entry.id }}">
+                                    <button type="submit" class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
                     </td>
-                    <td></td><td></td><td></td><td></td><td></td><td></td>
+                    {% endfor %}
                 </tr>
+                <!-- dinner row -->
                 <tr>
                     <td class="text-muted small fw-bold">DINNER</td>
-                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    {% for day in days %}
+                    <td class="p-2 align-top">
+                        {% for entry in day.entries.all %}
+                            {% if entry.meal_type == "dinner" %}
+                            <div class="border rounded p-2 text-start position-relative bg-white shadow-sm mb-1">
+                                <small class="fw-bold d-block">{{ entry.recipe.title }}</small>
+                                <form method="POST" action="{% url 'mealplan_entries' day.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="_action" value="delete">
+                                    <input type="hidden" name="entry_id" value="{{ entry.id }}">
+                                    <button type="submit" class="btn btn-link text-danger text-decoration-none p-0 small" style="font-size: 0.8rem;">Remove</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
                 </tr>
+                <!-- snacks row — note: snacks is not a meal_type in the model so cells stay empty for now -->
                 <tr>
                     <td class="text-muted small fw-bold">SNACKS</td>
-                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    {% for day in days %}<td></td>{% endfor %}
                 </tr>
             </tbody>
         </table>
@@ -90,34 +139,47 @@
 </div>
 
 <h5 class="fw-bold mb-3 border-bottom pb-2">ADD RECIPE TO PLAN</h5>
-<div class="row g-3 mb-5">
-    <div class="col-md-6">
-        <input type="text" class="form-control" placeholder="Type to search recipes...">
-    </div>
-    <div class="col-md-6">
-        <select class="form-select">
-            <option>All Recipes</option>
-            <option>Vegetarian</option>
-            <option>Keto</option>
+{% if days %}
+<!-- day and meal type selectors used by the add to plan buttons below -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <select id="daySelector" class="form-select">
+            {% for day in days %}
+                <option value="{{ day.id }}">{{ day.date|date:"l, M j" }}</option>
+            {% endfor %}
         </select>
     </div>
-    <div class="col-md-3 mt-4">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="bg-secondary bg-opacity-25" style="height: 120px;"></div>
-            <div class="card-body p-2 text-center">
-                <div class="bg-dark rounded mx-auto mb-2" style="height: 10px; width: 80%;"></div>
-                <button class="btn btn-sm btn-outline-primary w-100">+ Add to Plan</button>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mt-4">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="bg-secondary bg-opacity-25" style="height: 120px;"></div>
-            <div class="card-body p-2 text-center">
-                <div class="bg-dark rounded mx-auto mb-2" style="height: 10px; width: 70%;"></div>
-                <button class="btn btn-sm btn-outline-primary w-100">+ Add to Plan</button>
-            </div>
-        </div>
+    <div class="col-md-3">
+        <select id="mealTypeSelector" class="form-select">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+        </select>
     </div>
 </div>
+<div class="row g-3 mb-5">
+    <!-- loop through recipes passed from the view -->
+    {% for recipe in recipes %}
+    <div class="col-md-3 mt-4">
+        <div class="card h-100 shadow-sm border-0">
+            {% if recipe.image %}
+                <img src="{{ recipe.image.url }}" class="card-img-top" style="height: 120px; object-fit: cover;">
+            {% else %}
+                <div class="bg-secondary bg-opacity-25" style="height: 120px;"></div>
+            {% endif %}
+            <div class="card-body p-2 text-center">
+                <small class="fw-bold d-block mb-2">{{ recipe.title }}</small>
+                <!-- post to mealplan_entries for the first day as a default, js can update this -->
+                <form method="POST" action="{% url 'mealplan_entries' days.0.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="recipe_id" value="{{ recipe.id }}">
+                    <input type="hidden" name="meal_type" value="dinner">
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">+ Add to Plan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 {% endblock %}

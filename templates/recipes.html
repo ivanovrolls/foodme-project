@@ -43,66 +43,38 @@
 </div>
 
 <div class="row g-4 mb-5">
-
+    <!-- loop through recipes passed from the view -->
+    {% for recipe in recipes %}
     <div class="col-md-4 col-sm-6">
         <div class="card h-100 shadow-sm border-0 overflow-hidden">
-            <a href="{% url 'recipe_detail' %}" class="text-decoration-none">
-                <div class="bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <span class="text-muted fw-bold">[RECIPE IMAGE]</span>
-                </div>
+            <a href="{% url 'recipe_detail' recipe.id %}" class="text-decoration-none">
+                {% if recipe.image %}
+                    <img src="{{ recipe.image.url }}" class="w-100" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <span class="text-muted fw-bold">no image</span>
+                    </div>
+                {% endif %}
             </a>
             <div class="card-body">
-                <div class="bg-dark rounded mb-3" style="height: 16px; width: 80%;"></div>
-                <div class="d-flex gap-2 mb-3">
-                    <span class="badge border text-dark bg-light">VEG</span>
-                    <span class="badge border text-dark bg-light">QUICK</span>
+                <h6 class="fw-bold mb-3">{{ recipe.title }}</h6>
+                <!-- show tags for this recipe -->
+                <div class="d-flex gap-2 mb-3 flex-wrap">
+                    {% for tag in recipe.tags.all %}
+                        <span class="badge border text-dark bg-light">{{ tag.name|upper }}</span>
+                    {% endfor %}
                 </div>
             </div>
             <div class="card-footer bg-white border-top-0 d-flex justify-content-between text-muted small pb-3">
-                <span>⏱️ 30 min</span>
-                <span>👤 4 servings</span>
+                <span>🥘 {{ recipe.recipe_ingredients.count }} ingredients</span>
+                <span>📋 {{ recipe.steps.count }} steps</span>
             </div>
         </div>
     </div>
-
-    <div class="col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm border-0 overflow-hidden">
-            <a href="{% url 'recipe_detail' %}" class="text-decoration-none">
-                <div class="bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <span class="text-muted fw-bold">[RECIPE IMAGE]</span>
-                </div>
-            </a>
-            <div class="card-body">
-                <div class="bg-dark rounded mb-3" style="height: 16px; width: 70%;"></div>
-                <div class="d-flex gap-2 mb-3">
-                    <span class="badge border text-dark bg-light">KETO</span>
-                </div>
-            </div>
-            <div class="card-footer bg-white border-top-0 d-flex justify-content-between text-muted small pb-3">
-                <span>⏱️ 45 min</span>
-                <span>👤 2 servings</span>
-            </div>
+    {% empty %}
+        <div class="col-12">
+            <p class="text-muted">no recipes yet — <a href="{% url 'add_recipe' %}">add your first one</a></p>
         </div>
-    </div>
-
-    <div class="col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm border-0 overflow-hidden">
-            <a href="{% url 'recipe_detail' %}" class="text-decoration-none">
-                <div class="bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <span class="text-muted fw-bold">[RECIPE IMAGE]</span>
-                </div>
-            </a>
-            <div class="card-body">
-                <div class="bg-dark rounded mb-3" style="height: 16px; width: 90%;"></div>
-                <div class="d-flex gap-2 mb-3">
-                    <span class="badge border text-dark bg-light">HIGH-PROTEIN</span>
-                </div>
-            </div>
-            <div class="card-footer bg-white border-top-0 d-flex justify-content-between text-muted small pb-3">
-                <span>⏱️ 20 min</span>
-                <span>👤 1 servings</span>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
 </div>
 {% endblock %}

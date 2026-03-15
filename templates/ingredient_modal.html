@@ -1,0 +1,19 @@
+<!-- modal for adding a new ingredient on the fly -->
+<div class="modal fade" id="addIngredientModal" tabindex="-1" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold" id="addIngredientModalLabel">Add New Ingredient</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <input type="text" id="newIngredientName" class="form-control" placeholder="e.g. Chicken Breast">
+                <div id="ingredientModalError" class="text-danger small mt-1" style="display:none;"></div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn btn-primary btn-sm fw-bold" id="saveNewIngredient">ADD</button>
+            </div>
+        </div>
+    </div>
+</div>

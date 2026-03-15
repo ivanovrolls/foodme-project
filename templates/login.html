@@ -8,16 +8,20 @@
     <div class="col-md-5">
         <div class="card shadow-sm border-0 h-100 p-4">
             <h3 class="fw-bold mb-4">Login</h3>
-            <form>
+            {% if error and not register %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            <form action="{% url 'login_user' %}" method="POST">
+                {% csrf_token %}
                 <div class="mb-3">
-                    <label for="loginEmail" class="form-label small text-muted text-uppercase fw-bold">Email</label>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email">
+                    <label for="loginUsername" class="form-label small text-muted text-uppercase fw-bold">Username</label>
+                    <input type="text" name="username" class="form-control" id="loginUsername" placeholder="Enter your username">
                 </div>
 
                 <div class="mb-4">
                     <label for="loginPassword" class="form-label small text-muted text-uppercase fw-bold">Password</label>
                     <div class="input-group">
-                        <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password">
+                        <input type="password" name="password" class="form-control" id="loginPassword" placeholder="Enter your password">
                         <button class="btn btn-outline-secondary toggle-password" type="button" tabindex="-1" style="border-color: #dee2e6;">🙈</button>
                     </div>
                 </div>
@@ -43,20 +47,24 @@
     <div class="col-md-5" id="signupSection">
         <div class="card shadow-sm border-0 h-100 p-4 bg-white">
             <h3 class="fw-bold mb-4">Sign Up</h3>
-            <form>
+            {% if error and register %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            <form action="{% url 'register_user' %}" method="POST">
+                {% csrf_token %}
                 <div class="mb-3">
-                    <label for="signupName" class="form-label small text-muted text-uppercase fw-bold">Full Name</label>
-                    <input type="text" class="form-control" id="signupName" placeholder="e.g. Jane Doe">
+                    <label for="signupName" class="form-label small text-muted text-uppercase fw-bold">Username</label>
+                    <input type="text" name="username" class="form-control" id="signupName" placeholder="e.g. janedoe">
                 </div>
                 <div class="mb-3">
                     <label for="signupEmail" class="form-label small text-muted text-uppercase fw-bold">Email</label>
-                    <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email">
+                    <input type="email" name="email" class="form-control" id="signupEmail" placeholder="Enter your email">
                 </div>
 
                 <div class="mb-3">
                     <label for="signupPassword" class="form-label small text-muted text-uppercase fw-bold">Password</label>
                     <div class="input-group">
-                        <input type="password" class="form-control" id="signupPassword" placeholder="Create a password">
+                        <input type="password" name="password" class="form-control" id="signupPassword" placeholder="Create a password">
                         <button class="btn btn-outline-secondary toggle-password" type="button" tabindex="-1" style="border-color: #dee2e6;">🙈</button>
                     </div>
                 </div>
